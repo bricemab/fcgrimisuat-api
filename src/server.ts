@@ -5,7 +5,13 @@ import { createPool } from "mysql2";
 import bodyParser from "body-parser";
 import cors from "cors";
 import compression from "compression";
-import { Request, Response } from "express";
+import express, { Request, Response } from "express";
+import morgan from "morgan";
+import jwt from "jsonwebtoken";
+import * as cheerio from "cheerio";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import localData from "dayjs/plugin/localeData.js";
 import Logger from "./utils/Logger";
 import Utils from "./utils/Utils";
 import UserRouter from "./routes/UserRouter";
@@ -18,17 +24,10 @@ import {
 import TokenManager from "./modules/Global/TokenManager";
 import config from "./config/config";
 
-import morgan from "morgan";
-import express from "express";
 import AclManager from "./permissions/AclManager";
 import { Permission } from "./permissions/permissions";
 import RequestManager from "./modules/Global/RequestManager";
 import { ApplicationRequest } from "./utils/Types";
-import jwt from "jsonwebtoken";
-import * as cheerio from "cheerio";
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat.js";
-import localData from "dayjs/plugin/localeData.js";
 import "dayjs/locale/fr.js";
 
 dayjs.extend(customParseFormat);
@@ -60,6 +59,30 @@ const setup = async () => {
   app.set("trust proxy", 1); // trust first proxy
   app.set("view engine", "ejs");
   app.set("views", path.join(__dirname, "views").replace("dist", "src"));
+  app.use("/js", (req: any, res: any) => {
+    const file = path.join(`${__dirname}`, "..", "/node_modules/", req.url);
+    if (fs.existsSync(file)) {
+      res.sendFile(file);
+    } else {
+      res.render("templates/index", {
+        title: "FC Grimisuat - Page introuvable",
+        body: "../not-found"
+      });
+    }
+  });
+  app.use("/css", (req: any, res: any) => {
+    const file = path
+      .join(`${__dirname}`, "/assets/", req.url)
+      .replace("dist", "src");
+    if (fs.existsSync(file)) {
+      res.sendFile(file);
+    } else {
+      res.render("templates/index", {
+        title: "FC Grimisuat - Page introuvable",
+        body: "../not-found"
+      });
+    }
+  });
   app.use(TokenManager.buildSessionToken);
 
   GlobalStore.addItem("config", config);
@@ -98,7 +121,10 @@ setup()
     Logger.verbose(`Setup finish with success`);
     app.use("/users", UserRouter);
     app.get("/calendar/:id", async (request: Request, response: Response) => {
-      response.render("calendar");
+      response.render("templates/index", {
+        title: "FC Grimisuat - Calendrier",
+        body: "../calendar"
+      });
     });
     app.get(
       "/calendar-list/:id",
