@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendrier des Matchs</title>
+  <style>
+    /* Style basique pour un indicateur de chargement */
+    #loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    #content {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<h1>Calendrier des Matchs</h1>
+
+<!-- Indicateur de chargement -->
+<div id="loading">
+  <p>Chargement en cours...</p>
+</div>
+
+<!-- Contenu réel -->
+<div id="content">
+  <ul id="matches-list">
+  </ul>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Afficher l'indicateur de chargement
+    document.getElementById("loading").style.display = "block";
+
+    // Effectuer une requête AJAX pour obtenir les données des matchs
+    fetch('/calendar-list/12345')  // ID de l'équipe par exemple
+      .then(response => response.json())
+      .then(data => {
+        const matchesList = document.getElementById("matches-list");
+        data.matches.forEach(match => {
+          const listItem = document.createElement("li");
+          if (match.isContest) {
+            listItem.innerHTML = `<strong>${match.name}</strong>`;
+          } else {
+            listItem.innerHTML = `
+              <strong>Date :</strong> ${match.date}<br>
+              <strong>Équipe A :</strong> ${match.teamA}<br>
+              <strong>Équipe B :</strong> ${match.teamB}<br>
+              <strong>Compétition :</strong> ${match.contest.name}
+            `;
+          }
+          matchesList.appendChild(listItem);
+        });
+
+        // Masquer l'indicateur de chargement et afficher les données
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("content").style.display = "block";
+      })
+      .catch(error => {
+        console.error('Error fetching calendar:', error);
+      });
+  });
+</script>
+
+</body>
+</html>

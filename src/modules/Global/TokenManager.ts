@@ -19,82 +19,77 @@ export default class TokenManager {
     response: Response,
     next: NextFunction
   ) {
-    if (expressRequest.method === "GET") {
-      const request = expressRequest as ApplicationRequest<{
-        data: {};
-        token: string;
-      }>;
-      if (!expressRequest.query.token) {
-        request.hasValidToken = true;
-        return next();
-        // return RequestManager.sendResponse(response, {
-        //   success: false,
-        //   error: {
-        //     code: AuthenticationErrors.AUTH_TOKEN_IS_NOT_AUTHENTIC,
-        //     message: `Any valid token was provided`
-        //   }
-        // });
-      }
-      const { token: tokenGet } = request.query;
-      if (tokenGet && typeof tokenGet === "string") {
-        TokenManager.decodeToken(tokenGet)
-          .then((tokenData: ApplicationUserSessionToken) => {
-            request.rawToken = tokenGet;
-            request.tokenDecryptedData = tokenData;
-            request.hasValidToken = true;
-            next();
-          })
-          .catch((error: ApplicationError) => {
-            Utils.manageError(error);
-            RequestManager.sendResponse(response, {
-              success: false,
-              error
-            });
-          });
-      } else {
-        return RequestManager.sendResponse(response, {
-          success: false,
-          error: {
-            code: AuthenticationErrors.AUTH_TOKEN_IS_NOT_AUTHENTIC,
-            message: `Any valid token was provided`
-          }
-        });
-      }
-    }
-    // requete POST
-    else if (expressRequest.method === "POST") {
-      const request = expressRequest as ApplicationRequest<{
-        data: {};
-        token: string;
-      }>;
-
-      // eslint-disable-next-line no-shadow
-      const { data, token } = request.body;
-      const rawToken = request.headers["x-user-token"] as string;
-      const backendToken = request.headers["x-access-token"] as string;
-
-      //Verification du token d'accès au backend
-      if (
-        backendToken &&
-        config.server.security.backendTokenSecretKey === backendToken
-      ) {
-        return RequestManager.sendResponse(response, {
-          success: false,
-          error: {
-            code: GeneralErrors.PACKET_NOT_AUTHENTIC,
-            message: `The packet is not authentic`
-          }
-        });
-      } else {
-        return RequestManager.sendResponse(response, {
-          success: false,
-          error: {
-            code: AuthenticationErrors.AUTH_TOKEN_IS_NOT_AUTHENTIC,
-            message: `Any valid token was provided`
-          }
-        });
-      }
-    }
+    const request = expressRequest as ApplicationRequest<{
+      data: {};
+      token: string;
+    }>;
+    request.hasValidToken = true;
+    return next();
+    // if (expressRequest.method === "GET") {
+    //   if (!expressRequest.query.token) {
+    //     return RequestManager.sendResponse(response, {
+    //       success: false,
+    //       error: {
+    //         code: AuthenticationErrors.AUTH_TOKEN_IS_NOT_AUTHENTIC,
+    //         message: `Any valid token was provided`
+    //       }
+    //     });
+    //   }
+    //   const { token: tokenGet } = request.query;
+    //   if (tokenGet && typeof tokenGet === "string") {
+    //     TokenManager.decodeToken(tokenGet)
+    //       .then((tokenData: ApplicationUserSessionToken) => {
+    //         request.rawToken = tokenGet;
+    //         request.tokenDecryptedData = tokenData;
+    //         request.hasValidToken = true;
+    //         next();
+    //       })
+    //       .catch((error: ApplicationError) => {
+    //         Utils.manageError(error);
+    //         RequestManager.sendResponse(response, {
+    //           success: false,
+    //           error
+    //         });
+    //       });
+    //   } else {
+    //     return RequestManager.sendResponse(response, {
+    //       success: false,
+    //       error: {
+    //         code: AuthenticationErrors.AUTH_TOKEN_IS_NOT_AUTHENTIC,
+    //         message: `Any valid token was provided`
+    //       }
+    //     });
+    //   }
+    // }
+    // // requete POST
+    // else if (expressRequest.method === "POST") {
+    //   // eslint-disable-next-line no-shadow
+    //   const { data, token } = request.body;
+    //   const rawToken = request.headers["x-user-token"] as string;
+    //   const backendToken = request.headers["x-access-token"] as string;
+    //
+    //   //Verification du token d'accès au backend
+    //   if (
+    //     backendToken &&
+    //     config.server.security.backendTokenSecretKey === backendToken
+    //   ) {
+    //     return RequestManager.sendResponse(response, {
+    //       success: false,
+    //       error: {
+    //         code: GeneralErrors.PACKET_NOT_AUTHENTIC,
+    //         message: `The packet is not authentic`
+    //       }
+    //     });
+    //   } else {
+    //     return RequestManager.sendResponse(response, {
+    //       success: false,
+    //       error: {
+    //         code: AuthenticationErrors.AUTH_TOKEN_IS_NOT_AUTHENTIC,
+    //         message: `Any valid token was provided`
+    //       }
+    //     });
+    //   }
+    // }
   }
 
   /*
