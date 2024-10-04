@@ -1,14 +1,13 @@
 import { Request } from "express";
 import {
   AuthenticationErrors,
-  CampaignError,
   GeneralErrors,
   UserErrors
 } from "../modules/Global/BackendErrors";
 import UserEntity from "../modules/Users/UserEntity";
 
 export interface ApplicationError {
-  code: GeneralErrors | AuthenticationErrors | UserErrors | CampaignError;
+  code: GeneralErrors | AuthenticationErrors | UserErrors;
   message: string;
   details?: any;
 }
@@ -51,16 +50,9 @@ export interface ApplicationResponse<DataType> {
 export type ApplicationResponsePromise<DataType> = Promise<
   ApplicationResponse<DataType>
 >;
-export interface IntranetImportData {
-  users: UserEntity[];
-}
 
-export interface CsvRow {
-  first: string;
-  second: string;
-  third: string;
-  fourth: string;
-  fifth: string;
-  sixth: string;
-  seventh: string;
+export enum MATCH_STATUS_TYPE {
+  PLAYED = "",
+  RETURNED = "R",
+  NO_RESULT = "AN"
 }

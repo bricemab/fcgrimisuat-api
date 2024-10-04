@@ -130,52 +130,70 @@ setup()
       "/calendar-list/:id",
       async (request: Request, response: Response) => {
         const calenderUrl =
-          "https://club.football.ch/fr/club/equipes/team/calendrier-equipe/&v=976&t=61575";
+          "https://matchcenter.avf-wfv.ch/default.aspx?oid=17&lng=2&v=976&t=34389&ls=23172&sg=64957&a=pt";
         const html = await Utils.fetchPageData(calenderUrl);
         const $ = cheerio.load(html);
 
         const matches: any = [];
         let lastContest = {};
 
-        $("#contentpane .list-group .list-group-item").each(
-          (index: number, element) => {
-            if ($(element).hasClass("sppTitel")) {
-              const contestName = $(element)
-                .text()
-                .trim();
-              const contest = { isContest: true, name: contestName };
-              lastContest = contest;
-              matches.push(contest);
-            } else {
-              const teamA = $(element)
-                .find(".teamA")
-                .text()
-                .trim();
-              const teamB = $(element)
-                .find(".teamB")
-                .text()
-                .trim();
-              let dateString = $(element)
-                .find(".date")
-                .text()
-                .trim();
-              dateString = dateString.substring(3);
-              const date = dayjs(
-                dateString,
-                "DD.MM.YYYYHH:mm".substring(0, dateString.length)
-              );
-              const match = {
-                isContest: false,
-                teamA,
-                teamB,
-                contest: lastContest,
-                date: Utils.ucFirst(date.format("dddd DD.MM.YYYY HH:mm"))
-              };
-              matches.push(match);
-            }
-          }
-        );
+        $(
+          "#ctl05_VereinMasterObjectID_ctl02_tbResultate.list-group .list-group-item"
+        ).each((index: number, element) => {
+          if ($(element).hasClass("sppTitel")) {
+            const contestName = $(element)
+              .text()
+              .trim();
+            const contest = { isContest: true, name: contestName };
+            lastContest = contest;
+            matches.push(contest);
+          } else {
+            const teamA = $(element)
+              .find(".teamA")
+              .text()
+              .trim();
+            const teamB = $(element)
+              .find(".teamB")
+              .text()
+              .trim();
+            const goalA = $(element)
+              .find(".torA")
+              .text()
+              .trim();
+            const goalB = $(element)
+              .find(".torB")
+              .text()
+              .trim();
+            const status = $(element)
+              .find(".telegramm-link")
+              .text()
+              .trim();
 
+            if (status === "R") {
+              console.log($(element).find(".telegramm-link"));
+            }
+            let dateString = $(element)
+              .find(".date")
+              .text()
+              .trim();
+            dateString = dateString.substring(3);
+            const date = dayjs(
+              dateString,
+              "DD.MM.YYYYHH:mm".substring(0, dateString.length)
+            );
+            const match = {
+              isContest: false,
+              teamA,
+              teamB,
+              goalA,
+              goalB,
+              status,
+              contest: lastContest,
+              date: Utils.ucFirst(date.format("dddd DD.MM.YYYY HH:mm"))
+            };
+            matches.push(match);
+          }
+        });
         response.json({ matches });
       }
     );
